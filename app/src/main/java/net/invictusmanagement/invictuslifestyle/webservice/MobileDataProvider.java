@@ -591,11 +591,12 @@ public class MobileDataProvider {
         }.getType());
     }
 
-    public void createDigitalKey(DigitalKey item) throws IOException, ForbiddenException {
+    public String createDigitalKey(DigitalKey item) throws IOException, ForbiddenException {
 
         String json = new GsonBuilder().registerTypeAdapter(Date.class, new DateSerializer()).create().toJson(item);
         Log.e("Post >> ", json);
-        putOrPost(false, "digitalkeys/createguestkey", json);
+        String response=putOrPostWithReturn(false, "digitalkeys/createguestkey", json);
+        return response;
     }
 
     public void createQuickDigitalKey(DigitalKey item, NewDigitalKeyActivity newDigitalKeyActivity) throws IOException, ForbiddenException {
@@ -906,6 +907,9 @@ public class MobileDataProvider {
             if (responseCode == 400) {
                 br = new BufferedReader(new InputStreamReader(https.getErrorStream()));
             } else if (responseCode == 200) {
+                br = new BufferedReader(new InputStreamReader(https.getInputStream()));
+                successModel = br.readLine();
+            }else if (responseCode==201){
                 br = new BufferedReader(new InputStreamReader(https.getInputStream()));
                 successModel = br.readLine();
             }

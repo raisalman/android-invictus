@@ -40,7 +40,7 @@ android {
             dimension "version"
             buildConfigField "String", "HubListenConnectionString", '"Endpoint=sb://invictusdev.servicebus.windows.net/;SharedAccessKeyName=DefaultListenSharedAccessSignature;SharedAccessKey=5r9ygxc8RUOgJ+olDBw3ogAM3+hKWpPYv3vZl5YCESI="'
             buildConfigField "String", "MsgHubListenConnectionString", '"Endpoint=sb://invictusdev.servicebus.windows.net/;SharedAccessKeyName=DefaultListenSharedAccessSignature;SharedAccessKey=D8V3OLIiq7wWANXUHoQynHrmup+4YURBkYKrO93e/vY="'
-            buildConfigField "String", "_baseUrl", '"https://192.168.4.112:44345/api/v1/"'
+            buildConfigField "String", "_baseUrl", '"https://192.168.1.8:44345/api/v1/"'
             buildConfigField "String", "_chatHubBaseUrl", '"https://mobilechatdev.invictusmanagement.net/chathub"'
             buildConfigField "String", "_chatMobileHubBaseUrl", '"https://mobiledev.invictusmanagement.net/chathub"'
             buildConfigField "String", "APP_NAME", '"Invictus Lifestyle"'
@@ -54,7 +54,7 @@ android {
             dimension "version"
             buildConfigField "String", "HubListenConnectionString", '"Endpoint=sb://invictus.servicebus.windows.net/;SharedAccessKeyName=DefaultListenSharedAccessSignature;SharedAccessKey=NplWa4Qt5/wEWAUPasaC0ZuaveafkZw9hi4bOhZaOzo="'
             buildConfigField "String", "MsgHubListenConnectionString", '"Endpoint=sb://invictus.servicebus.windows.net/;SharedAccessKeyName=DefaultListenSharedAccessSignature;SharedAccessKey=6dYrWhPTo+43ouD/s2RqeIw3GetHvohNISUD4/lXH3w="'
-            buildConfigField "String", "_baseUrl", '"https://mobiledev.invictusmanagement.net/api/v1/"'
+            buildConfigField "String", "_baseUrl", '"https://mobile.invictusmanagement.net/api/v1/"'
             buildConfigField "String", "_chatHubBaseUrl", '"https://mobilechat.invictusmanagement.net/chathub"'
             buildConfigField "String", "_chatMobileHubBaseUrl", '"https://mobile.invictusmanagement.net/chathub"'
             buildConfigField "String", "APP_NAME", '"Invictus Lifestyle"'

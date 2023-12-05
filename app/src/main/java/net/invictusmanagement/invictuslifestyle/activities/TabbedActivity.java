@@ -1683,7 +1683,7 @@ public class TabbedActivity extends BaseActivity implements AccessPointsListFrag
                     ClipboardManager clipboard = (ClipboardManager) TabbedActivity.this.getSystemService(Context.CLIPBOARD_SERVICE);
                     long diff = item.getToUtc().getTime() - item.getFromUtc().getTime();
                     int hours = (int) (diff / (1000 * 60 * 60));
-                    String keyText = "Delivery Quick Key is " + item.getKey() + "\nFind " + HomeFragment.userName + " in the DIRECTORY " + "of the kiosk and enter this key. Key expires in 90 mins.";
+                    String keyText = "Guest Key is " + item.getKey() + "\nFind " + HomeFragment.userName + " in the DIRECTORY " + "of the kiosk and enter this key. Key expires on "+formatter.format(item.getToUtc());
 //                    String keyText = HomeFragment.userName + " sent you this quick key:\n"
 //                            + item.getKey() + " \n" +
 //                            "Find " + HomeFragment.userName + " using the directory button of the" +

@@ -3,6 +3,9 @@ package net.invictusmanagement.invictuslifestyle.fragments;
 import static android.Manifest.permission.READ_CONTACTS;
 
 import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,6 +28,7 @@ import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +39,8 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import com.karumi.dexter.Dexter;
 import com.karumi.dexter.MultiplePermissionsReport;
 import com.karumi.dexter.PermissionToken;
@@ -45,7 +51,9 @@ import net.invictusmanagement.invictuslifestyle.R;
 import net.invictusmanagement.invictuslifestyle.adapters.GuestEntryDoorsAdapter;
 import net.invictusmanagement.invictuslifestyle.customviews.ProgressDialog;
 import net.invictusmanagement.invictuslifestyle.models.DigitalKey;
+import net.invictusmanagement.invictuslifestyle.models.GuestDigitalKeyResponse;
 import net.invictusmanagement.invictuslifestyle.models.GuestEntryDoor;
+import net.invictusmanagement.invictuslifestyle.models.QuickDigitalKeyResponse;
 import net.invictusmanagement.invictuslifestyle.utils.Utilities;
 import net.invictusmanagement.invictuslifestyle.webservice.MobileDataProvider;
 import net.invictusmanagement.invictuslifestyle.webservice.RestCallBack;
@@ -86,6 +94,7 @@ public class GuestKeyFragment extends Fragment {
     }
 
 
+    private GuestDigitalKeyResponse guestDigitalKeyResponse;
     private Button _buttonSend;
     private AutoCompleteTextView _recipientEditText;
     private EditText _emailEditText, _mobileNumberEditText;
@@ -96,6 +105,10 @@ public class GuestKeyFragment extends Fragment {
     private EditText _toDateEditText;
     private EditText _toTimeEditText;
     private EditText _notesEditText;
+
+    private LinearLayout llLastKey;
+    private TextView tvCreatedDate, tvKey, tvCopyText;
+    private Button btnCopy;
     private Boolean _changesMade = false;
     private boolean isMobileValid = false;
     private boolean isEmailValid = false;
@@ -151,6 +164,13 @@ public class GuestKeyFragment extends Fragment {
         _mobileNumberEditText = view.findViewById(R.id.mobileNumber);
         txtTtlSelectDoor = view.findViewById(R.id.txtTtlSelectDoor);
         rvChooseDoor = view.findViewById(R.id.rvChooseDoor);
+
+        llLastKey = view.findViewById(R.id.llLastKey);
+        tvCreatedDate = view.findViewById(R.id.tvCreateDate);
+        tvKey = view.findViewById(R.id.tvKey);
+        tvCopyText = view.findViewById(R.id.tvCopyText);
+        btnCopy = view.findViewById(R.id.btnCopy);
+
 
         _recipientEditText = view.findViewById(R.id.recipent);
         _recipientEditText.addTextChangedListener(_watcher);
@@ -337,7 +357,6 @@ public class GuestKeyFragment extends Fragment {
         });
 
     }
-
     private void createNewDigitalKey() {
         boolean cancel = false;
         View focusView = null;
@@ -554,7 +573,7 @@ public class GuestKeyFragment extends Fragment {
         key.setQuickKey(false);
         key.setToPackageCenter(deliverTo != 0);
 
-        new AsyncTask<DigitalKey, Void, Boolean>() {
+        new AsyncTask<Void, Void, String>() {
 
             @Override
             protected void onPreExecute() {
@@ -563,31 +582,62 @@ public class GuestKeyFragment extends Fragment {
             }
 
             @Override
-            protected Boolean doInBackground(DigitalKey... args) {
+            protected String doInBackground(Void... args) {
                 try {
-                    MobileDataProvider.getInstance().createDigitalKey(args[0]);
-                    return true;
+                    return  MobileDataProvider.getInstance().createDigitalKey(key);
                 } catch (Exception ex) {
                     Log.e(Utilities.TAG, Log.getStackTraceString(ex));
-                    return false;
+                    return null;
                 }
             }
 
             @Override
-            protected void onPostExecute(Boolean success) {
+            protected void onPostExecute(String success) {
                 ProgressDialog.dismissProgress();
-                if (success) {
-                    Toast.makeText(getContext(), "Digital key successfully sent.", Toast.LENGTH_LONG).show();
+                if (success!=null) {
+                    guestDigitalKeyResponse = new GsonBuilder().registerTypeAdapter(Date.class,
+                            new MobileDataProvider.DateDeserializer()).create()
+                            .fromJson(success, new TypeToken<GuestDigitalKeyResponse>() {
+                            }.getType());
+//                    Toast.makeText(getContext(), "Digital key successfully sent.", Toast.LENGTH_LONG).show();
+                    showLastCreatedView();
                 } else {
                     /*item.setEnabled(true);*/
                     Toast.makeText(getContext(), "Error while creating digital key", Toast.LENGTH_LONG).show();
                 }
+//                getActivity().setResult(1);
+//                getActivity().finish();
+            }
+
+        }.execute();
+
+    }
+
+    private void showLastCreatedView() {
+        llLastKey.setVisibility(View.VISIBLE);
+        DateFormat formatter = SimpleDateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.SHORT);
+        tvCreatedDate.setText("Created On: " + formatter.format(Calendar.getInstance().getTime()));
+        tvKey.setText("Guest Key is " + guestDigitalKeyResponse.key);
+        tvCopyText.setText("Find " + HomeFragment.userName + " in the DIRECTORY " +
+                "of the kiosk and enter this key. Key expires on "+formatter.format(guestDigitalKeyResponse.toUtc));
+
+
+        btnCopy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ClipboardManager clipboard =
+                        (ClipboardManager) getContext()
+                                .getSystemService(Context.CLIPBOARD_SERVICE);
+                String keyText = tvKey.getText().toString() + "\n" + tvCopyText.getText().toString();
+                ClipData clip = ClipData.newPlainText("Key", keyText);
+                clipboard.setPrimaryClip(clip);
+                Toast.makeText(getContext(),
+                        "Text copied. Enter this quick key in my DIRECTORY PROFILE on the kiosk.",
+                        Toast.LENGTH_LONG).show();
                 getActivity().setResult(1);
                 getActivity().finish();
             }
-
-        }.execute(key);
-
+        });
     }
 
     private void showAlertDialog(int i) {
@@ -716,7 +766,7 @@ public class GuestKeyFragment extends Fragment {
                         recipients2.remove(i);
                     }
                 }
-                _recipientEditText.setAdapter(new ArrayAdapter<ContactHelper>(getContext(), android.R.layout.simple_dropdown_item_1line, recipients2));
+                _recipientEditText.setAdapter(new ArrayAdapter<ContactHelper>(requireContext(), android.R.layout.simple_dropdown_item_1line, recipients2));
             }
 
         }).execute();

@@ -76,6 +76,7 @@
         <activity
             android:name=".GenerateDigitalKeyActivity"
             android:label="Generate Digital Key"
+            android:theme="@style/AppTheme.NoActionBar"
             android:exported="false">
         </activity>
         <activity
